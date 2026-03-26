@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Music, Sparkles, X, Play, Download, Zap } from "lucide-react";
+import { Music, Sparkles, X, Play, Download, Zap, Sliders } from "lucide-react";
 import * as Tone from "tone";
+import { WebReverb, WebDelay, AISynth, notesToFrequencies } from "@/lib/audioEffects";
 
 /**
  * DIETER STUDIO EDITOR
@@ -8,6 +9,7 @@ import * as Tone from "tone";
  * - Sidebar-based lyrics input with glassmorphism
  * - Flow visualization showing creation pipeline
  * - Audio synthesis with Tone.js (85 BPM heartbeat)
+ * - Professional effects: Reverb, Delay, AI Synth
  * - Organic animations and tube-glow accents
  */
 
@@ -29,8 +31,16 @@ We rise, we fall, we become the sound...`
   const [currentFlow, setCurrentFlow] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [showDownloads, setShowDownloads] = useState(false);
+  const [showEffects, setShowEffects] = useState(false);
+  const [reverbMix, setReverbMix] = useState(0.3);
+  const [delayMix, setDelayMix] = useState(0.2);
+  const [delayTime, setDelayTime] = useState(0.5);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const synthRef = useRef<Tone.Synth | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const reverbRef = useRef<WebReverb | null>(null);
+  const delayRef = useRef<WebDelay | null>(null);
+  const aiSynthRef = useRef<AISynth | null>(null);
 
   // Initialize audio context on first interaction
   const initAudio = async () => {
@@ -45,6 +55,15 @@ We rise, we fall, we become the sound...`
           release: 1,
         },
       }).toDestination();
+    }
+
+    // Initialize Web Audio API effects
+    if (!audioContextRef.current) {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = audioContext;
+      reverbRef.current = new WebReverb(audioContext);
+      delayRef.current = new WebDelay(audioContext, delayTime, 0.4);
+      aiSynthRef.current = new AISynth(audioContext);
     }
   };
 
@@ -111,6 +130,12 @@ We rise, we fall, we become the sound...`
     melody.forEach((note, i) => {
       synthRef.current!.triggerAttackRelease(note, "8n", now + i * 0.5);
     });
+
+    // Also play with AI Synth if available
+    if (aiSynthRef.current) {
+      const frequencies = notesToFrequencies(melody);
+      aiSynthRef.current.playSequence(frequencies, 0.4, 0.5);
+    }
   };
 
   // Summon warm vocal synthesis
@@ -128,6 +153,11 @@ We rise, we fall, we become the sound...`
         0.8
       );
     });
+
+    // Generate vocal with AI Synth
+    if (aiSynthRef.current) {
+      aiSynthRef.current.generateVoice(220, 2, "a");
+    }
   };
 
   // Harmonize elements
@@ -192,6 +222,79 @@ We rise, we fall, we become the sound...`
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
+
+          {/* Effects Panel Toggle */}
+          <div className="mb-6 pb-6 border-b border-cyan-500/20">
+            <button
+              onClick={() => setShowEffects(!showEffects)}
+              className="w-full p-3 rounded-lg bg-white/5 border border-cyan-500/20 hover:border-cyan-500/50 hover:bg-cyan-500/10 transition text-sm font-medium flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <Sliders className="w-4 h-4" />
+                Effects Rack
+              </span>
+              <span className="text-xs opacity-70">{showEffects ? "▼" : "▶"}</span>
+            </button>
+
+            {showEffects && (
+              <div className="mt-4 space-y-4 p-4 rounded-lg bg-white/5 border border-cyan-500/10">
+                <div>
+                  <label className="text-xs text-cyan-400 block mb-2">
+                    Reverb Mix: {Math.round(reverbMix * 100)}%
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={reverbMix}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setReverbMix(val);
+                      if (reverbRef.current) reverbRef.current.setMix(val);
+                    }}
+                    className="w-full h-2 bg-cyan-500/20 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-cyan-400 block mb-2">
+                    Delay Time: {(delayTime * 1000).toFixed(0)}ms
+                  </label>
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1"
+                    step="0.1"
+                    value={delayTime}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setDelayTime(val);
+                      if (delayRef.current) delayRef.current.setDelayTime(val);
+                    }}
+                    className="w-full h-2 bg-cyan-500/20 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-cyan-400 block mb-2">
+                    Delay Mix: {Math.round(delayMix * 100)}%
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={delayMix}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setDelayMix(val);
+                      if (delayRef.current) delayRef.current.setMix(val);
+                    }}
+                    className="w-full h-2 bg-cyan-500/20 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Lyrics Input */}
