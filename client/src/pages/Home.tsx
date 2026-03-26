@@ -96,6 +96,7 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+            <a href="/studio">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-background font-semibold neon-glow-hover"
@@ -103,6 +104,7 @@ export default function Home() {
                 <Sparkles className="w-5 h-5 mr-2" />
                 Start Creating
               </Button>
+            </a>
               <Button
                 size="lg"
                 variant="outline"
@@ -419,13 +421,15 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-background font-semibold neon-glow-hover"
-              >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Enter the Studio
-              </Button>
+              <a href="/studio">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-background font-semibold neon-glow-hover"
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Enter the Studio
+                </Button>
+              </a>
               <Button
                 size="lg"
                 variant="outline"
