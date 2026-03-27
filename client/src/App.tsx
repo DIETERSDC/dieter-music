@@ -1,19 +1,29 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Music } from "lucide-react";
+import { useEffect } from "react";
 import Home from "./pages/Home";
 import Studio from "./pages/Studio";
 import StudioEnhanced from "./pages/StudioEnhanced";
 import StudioProduction from "./pages/StudioProduction";
 import Dashboard from "./pages/Dashboard";
+
 function Router() {
   const { user, isAuthenticated, loading } = useAuth();
-  
+  const [location, setLocation] = useLocation();
+
+  // Redirect authenticated users to Studio on root path
+  useEffect(() => {
+    if (!loading && isAuthenticated && (location === "/" || location === "")) {
+      setLocation("/studio");
+    }
+  }, [loading, isAuthenticated, location, setLocation]);
+
   // Show loading state while checking authentication
   if (loading) {
     return (
@@ -25,16 +35,7 @@ function Router() {
       </div>
     );
   }
-  
-  // Redirect authenticated users to Studio, others to Home
-  if (isAuthenticated && typeof window !== "undefined") {
-    const currentPath = window.location.pathname;
-    if (currentPath === "/" || currentPath === "") {
-      window.location.href = "/studio";
-      return null;
-    }
-  }
-  
+
   return (
     <Switch>
       <Route path={"/"} component={Home} />
