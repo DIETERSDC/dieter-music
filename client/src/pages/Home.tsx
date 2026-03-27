@@ -1,3 +1,4 @@
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Music, Zap, Headphones, Download, Sparkles, ArrowRight } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -12,6 +13,10 @@ import { useState, useEffect } from "react";
  */
 
 export default function Home() {
+  // The userAuth hooks provides authentication state
+  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
+  let { user, loading, error, isAuthenticated, logout } = useAuth();
+
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -47,12 +52,28 @@ export default function Home() {
             <a href="#features" className="text-sm hover:text-cyan-500 transition">
               Features
             </a>
-            <Button
-              className="bg-cyan-600 hover:bg-cyan-500 text-background"
-              size="sm"
-            >
-              Enter Studio
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <a href="/dashboard" className="text-sm hover:text-cyan-500 transition">
+                  Dashboard
+                </a>
+                <Button
+                  className="bg-cyan-600 hover:bg-cyan-500 text-background"
+                  size="sm"
+                  onClick={logout}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button
+                className="bg-cyan-600 hover:bg-cyan-500 text-background"
+                size="sm"
+                onClick={() => window.location.href = '/studio'}
+              >
+                Enter Studio
+              </Button>
+            )}
           </div>
         </div>
       </nav>
@@ -96,13 +117,13 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-            <a href="/studio">
+            <a href={isAuthenticated ? "/dashboard" : "/studio"}>
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 text-background font-semibold neon-glow-hover"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Start Creating
+                {isAuthenticated ? "Go to Dashboard" : "Start Creating"}
               </Button>
             </a>
               <Button

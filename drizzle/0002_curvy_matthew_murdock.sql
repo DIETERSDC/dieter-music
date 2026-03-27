@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `walletBalance` decimal(10,2) DEFAULT '0.00' NOT NULL;

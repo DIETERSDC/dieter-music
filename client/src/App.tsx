@@ -6,12 +6,16 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Studio from "./pages/Studio";
-
+import StudioEnhanced from "./pages/StudioEnhanced";
+import Dashboard from "./pages/Dashboard";
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
-      <Route path={"/studio"} component={Studio} />
+      <Route path={"/studio"} component={StudioEnhanced} />
+      <Route path={"/studio-legacy"} component={Studio} />
+      <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
