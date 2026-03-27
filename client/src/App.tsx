@@ -27,28 +27,27 @@ function Router() {
     );
   }
 
+  // If authenticated, show studio routes, otherwise show home
+  if (isAuthenticated) {
+    return (
+      <Switch>
+        <Route path={"/"} component={StudioProduction} />
+        <Route path={"/studio"} component={StudioProduction} />
+        <Route path={"/studio-legacy"} component={StudioEnhanced} />
+        <Route path={"/studio-old"} component={Studio} />
+        <Route path={"/dashboard"} component={Dashboard} />
+        <Route path={"/404"} component={NotFound} />
+        <Route component={StudioProduction} />
+      </Switch>
+    );
+  }
+
+  // Unauthenticated routes
   return (
     <Switch>
-      {/* Authenticated routes */}
-      {isAuthenticated ? (
-        <>
-          <Route path={"/"} component={StudioProduction} />
-          <Route path={"/studio"} component={StudioProduction} />
-          <Route path={"/studio-legacy"} component={StudioEnhanced} />
-          <Route path={"/studio-old"} component={Studio} />
-          <Route path={"/dashboard"} component={Dashboard} />
-          <Route path={"/404"} component={NotFound} />
-          <Route component={StudioProduction} />
-        </>
-      ) : (
-        <>
-          <Route path={"/"} component={Home} />
-          <Route path={"/studio"} component={Home} />
-          <Route path={"/dashboard"} component={Home} />
-          <Route path={"/404"} component={NotFound} />
-          <Route component={NotFound} />
-        </>
-      )}
+      <Route path={"/"} component={Home} />
+      <Route path={"/404"} component={NotFound} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
