@@ -264,10 +264,10 @@ export default function StudioFunctional() {
                 {VOICES.map(voice => (
                   <button
                     key={voice.id}
-                    onClick=() => {
+                    onClick={() => {
                   setSelectedVoice(voice.id);
                   synthesizer.current?.setVoice(voice.id);
-                }
+                }}
                     className={`p-2 rounded-lg text-xs font-medium transition ${
                       selectedVoice === voice.id
                         ? "bg-cyan-600 text-white"
