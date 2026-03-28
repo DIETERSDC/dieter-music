@@ -48,7 +48,9 @@ function App() {
           <Toaster />
           <Router hook={useHashLocation}>
                       <Routes />
-          </Router>      </ThemeProvider>
+          </Router>
+                  </TooltipProvider>
+              </ThemeProvider>
     </ErrorBoundary>
   );
 }
