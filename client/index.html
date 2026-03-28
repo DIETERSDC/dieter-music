@@ -1,26 +1,65 @@
 <!doctype html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Dieter Music Platform</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Dieter Music - AI Song Generator with Real Vocals | Create, Sell & Share Music</title>
+    <meta name="title" content="Dieter Music - AI Song Generator with Real Vocals | Create, Sell & Share Music" />
+    <meta name="description" content="Professional AI music platform powered by ACE-Step 1.5. Generate full songs with real AI vocals from lyrics. Beat detection, voice synthesis, DAW tools. Create, sell and promote your AI-generated music." />
+    <meta name="keywords" content="AI music generator, AI singing, voice synthesis, song creation, music marketplace, AI vocals, beat detection, lyrics to song, music production, sell songs online" />
+    <meta name="author" content="Dieter Music Platform" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dieter-music.vercel.app/" />
+    <meta property="og:title" content="Dieter Music - AI Song Generator with Real Vocals" />
+    <meta property="og:description" content="Create professional songs with AI vocals, beats, and production tools. Sell your AI-generated music on our marketplace." />
+    <meta property="og:image" content="https://dieter-music.vercel.app/og-image.jpg" />
+    <meta property="og:site_name" content="Dieter Music" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://dieter-music.vercel.app/" />
+    <meta property="twitter:title" content="Dieter Music - AI Song Generator with Real Vocals" />
+    <meta property="twitter:description" content="Create professional songs with AI vocals, beats, and production tools. Sell your AI-generated music on our marketplace." />
+    <meta property="twitter:image" content="https://dieter-music.vercel.app/og-image.jpg" />
+    
+    <!-- Schema.org markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Dieter Music",
+      "description": "AI-powered music generation platform with real vocals, beat detection, and marketplace",
+      "url": "https://dieter-music.vercel.app",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "category": "Music Creation Software"
+      }
+    }
+    </script>
+    
     <!-- Voice Synthesis Libraries -->
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
     <script src="https://js.puter.com/v2/puter.js"></script>
+    
     <!-- Web Audio API for advanced synthesis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/6.3.0/wavesurfer.min.js"></script>
   </head>
-
+  
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"
+    ></script>
   </body>
-
 </html>
