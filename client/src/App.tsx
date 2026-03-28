@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import StudioFunctional from "./pages/StudioFunctional";
 import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
+import { useEffect } from "react";
 
 function Router() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -51,6 +52,26 @@ function Router() {
 }
 
 function App() {
+  // Handle /studio 404 by redirecting to hash-based routing
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      const hash = window.location.hash;
+      
+      // If accessing /studio directly without hash, redirect to /#/studio
+      if (path === "/studio" && !hash) {
+        window.location.href = "/#/studio";
+        return;
+      }
+      
+      // If accessing /dashboard directly without hash, redirect to /#/dashboard
+      if (path === "/dashboard" && !hash) {
+        window.location.href = "/#/dashboard";
+        return;
+      }
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <ThemeProvider
