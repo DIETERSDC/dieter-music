@@ -34,14 +34,13 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-// Use relative URL so Vercel proxy handles it, fallback to Manus for dev
-const getApiUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return `${import.meta.env.VITE_API_URL}/api/trpc`;
-  }
-  // In Vercel production: use relative URL (proxied by api/trpc.js)
-  // In Manus dev: use window.location.origin which points to the Manus backend
-  return '/api/trpc';
+// Build absolute URL for tRPC - required by httpBatchLink
+// Uses window.location.origin so it works on any domain (Vercel, Manus, etc.)
+const getApiUrl = (): string => {
+  const base = typeof window !== "undefined"
+    ? window.location.origin
+    : "http://localhost:5000";
+  return `${base}/api/trpc`;
 };
 
 const trpcClient = trpc.createClient({
