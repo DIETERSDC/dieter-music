@@ -30,7 +30,7 @@ const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const CHANNELS = ["Vocals", "Harmony", "Kick", "Snare", "HiHat", "Bass", "Chords", "FX"];
 
 export default function StudioFunctional() {
-  const { user, logout } = useAuth(); // Auth disabled for public Vercel deployment
+  // const { user, logout } = useAuth(); // Auth disabled for public Vercel deployment
     const user = null; // No auth on Vercel
     const logout = () => {}; // No-op logout
   const [, setLocation] = useLocation();
