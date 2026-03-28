@@ -4,7 +4,7 @@
   "installCommand": "npm install --legacy-peer-deps",
   "framework": null,
   "rewrites": [
-    { "source": "/api/trpc/:path*", "destination": "/api/trpc" },
+    { "source": "/api/trpc/:path*", "destination": "https://dieter-music-jnmb3nnd.manus.space/api/trpc/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
