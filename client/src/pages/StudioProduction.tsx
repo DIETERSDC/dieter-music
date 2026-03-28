@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { sing, stopPlayback, generateMelodyFromLyrics } from "@/lib/voiceSynthesis";
+import { recordVoiceSynthesis, downloadAudio, getAudioDuration } from "@/lib/audioExport";
 import {
   Music, Download, Sparkles, Play, Square, Volume2, Mic2, Sliders, Activity,
   Save, Share2, Loader2, Menu, X, Settings, RotateCcw, Zap, Headphones, Library
@@ -93,7 +94,36 @@ export default function StudioProduction() {
   };
 
   const handleExport = async () => {
-    alert("🎵 Export feature: WAV/MP3 download coming soon");
+    if (!lyrics.trim()) {
+      alert("Please enter lyrics to export");
+      return;
+    }
+
+    setIsSynthesizing(true);
+    try {
+      // Record the voice synthesis
+      const audioBlob = await recordVoiceSynthesis(lyrics, {
+        voice: selectedVoice,
+        pitch,
+        rate,
+      });
+
+      if (audioBlob) {
+        // Get duration for feedback
+        const duration = await getAudioDuration(audioBlob);
+        
+        // Download as WebM (can be converted to WAV on backend)
+        downloadAudio(audioBlob, trackName, 'webm');
+        alert(`✅ Audio exported! Duration: ${duration.toFixed(2)}s`);
+      } else {
+        alert("❌ Failed to export audio");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Error exporting audio");
+    } finally {
+      setIsSynthesizing(false);
+    }
   };
 
   const handleShare = async () => {
