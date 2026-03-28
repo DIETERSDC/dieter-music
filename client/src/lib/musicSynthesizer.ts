@@ -155,6 +155,44 @@ export class MusicSynthesizer {
 
     // Connect channels to master
     Object.values(this.channelGains).forEach(gain => gain.connect(this.master));
+
+        // Initialize Web Speech API
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      this.speechSynthesis = window.speechSynthesis;
+    }
+  }
+
+    /**
+   * Set the voice for synthesis
+   */
+  setVoice(voiceId: string) {
+    this.selectedVoiceName = voiceId;
+  }
+
+  /**
+   * Get the appropriate voice for the selected voice type
+   */
+  private getVoiceForSelection(): SpeechSynthesisVoice | null {
+    if (!this.speechSynthesis) return null;
+    
+    const voices = this.speechSynthesis.getVoices();
+    const voiceMap: Record<string, string[]> = {
+      'male-deep': ['Google US English', 'Microsoft David', 'Alex'],
+      'male-warm': ['Google UK English Male', 'Microsoft Mark'],
+      'male-bright': ['Daniel', 'Microsoft Ravi'],
+      'female-soprano': ['Google US English Female', 'Microsoft Zira', 'Samantha'],
+      'female-alto': ['Google UK English Female', 'Microsoft Hazel', 'Victoria'],
+      'female-breathy': ['Fiona', 'Microsoft Eva', 'Karen']
+    };
+    
+    const preferredNames = voiceMap[this.selectedVoiceName] || [];
+    for (const name of preferredNames) {
+      const voice = voices.find(v => v.name.includes(name));
+      if (voice) return voice;
+    }
+    
+    // Fallback to first English voice or any voice
+    return voices.find(v => v.lang.startsWith('en')) || voices[0] || null;
   }
 
   /**
@@ -243,7 +281,23 @@ export class MusicSynthesizer {
     this.scheduleDrums(genre);
 
     // Schedule voice synthesis
-    this.scheduleVoiceSynthesis(lyrics);
+    this.scheduleVoiceSynthesis// Add vocal synthesis with Web Speech API
+    if (this.speechSynthesis && lyrics.trim()) {
+      const utterance = new SpeechSynthesisUtterance(lyrics);
+      const voice = this.getVoiceForSelection();
+      
+      if (voice) {
+        utterance.voice = voice;
+        utterance.pitch = 1.2; // Slightly higher for singing effect
+        utterance.rate = (60 / bpm) * 4; // Sync with BPM
+        utterance.volume = 0.7;
+        
+        this.currentUtterance = utterance;
+        setTimeout(() => {
+          this.speechSynthesis!.speak(utterance);
+        }, 100); // Small delay to sync with music
+      }
+    }
 
     // Start playback
     this.isPlaying = true;
