@@ -1,8 +1,8 @@
 // Vercel serverless proxy for tRPC - forwards requests to Manus backend
 const MANUS_BACKEND = 'https://dieter-music-jnmb3nnd.manus.space';
 
-export default async function handler(req, res) {
-  const path = req.url.replace(/^\/api\/trpc/, '') || '';
+module.exports = async function handler(req, res) {
+  const path = (req.url || '').replace(/^\/api\/trpc/, '') || '';
   const targetUrl = `${MANUS_BACKEND}/api/trpc${path}`;
 
   try {
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.status(response.status);
-    
+
     try {
       res.json(JSON.parse(data));
     } catch {
@@ -39,4 +39,4 @@ export default async function handler(req, res) {
     console.error('Proxy error:', error);
     res.status(502).json({ error: 'Bad Gateway', message: error.message });
   }
-}
+};
