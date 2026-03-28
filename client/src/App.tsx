@@ -11,6 +11,9 @@ import Studio from "./pages/Studio";
 import StudioEnhanced from "./pages/StudioEnhanced";
 import StudioProduction from "./pages/StudioProduction";
 import Dashboard from "./pages/Dashboard";
+import DAWStudio from "./pages/DAWStudio";
+import VoiceStudio from "./pages/VoiceStudio";
+import Pricing from "./pages/Pricing";
 
 function Router() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -33,6 +36,8 @@ function Router() {
       <Switch>
         <Route path={"/"} component={StudioProduction} />
         <Route path={"/studio"} component={StudioProduction} />
+        <Route path={"/daw"} component={DAWStudio} />
+        <Route path={"/voices"} component={VoiceStudio} />
         <Route path={"/studio-legacy"} component={StudioEnhanced} />
         <Route path={"/studio-old"} component={Studio} />
         <Route path={"/dashboard"} component={Dashboard} />
@@ -46,6 +51,7 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/pricing"} component={Pricing} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
