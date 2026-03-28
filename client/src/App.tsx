@@ -7,12 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Music } from "lucide-react";
 import Home from "./pages/Home";
-import Studio from "./pages/Studio";
-import StudioEnhanced from "./pages/StudioEnhanced";
-import StudioProduction from "./pages/StudioProduction";
+import StudioFunctional from "./pages/StudioFunctional";
 import Dashboard from "./pages/Dashboard";
-import DAWStudio from "./pages/DAWStudio";
-import VoiceStudio from "./pages/VoiceStudio";
 import Pricing from "./pages/Pricing";
 
 function Router() {
@@ -34,15 +30,11 @@ function Router() {
   if (isAuthenticated) {
     return (
       <Switch>
-        <Route path={"/"} component={StudioProduction} />
-        <Route path={"/studio"} component={StudioProduction} />
-        <Route path={"/daw"} component={DAWStudio} />
-        <Route path={"/voices"} component={VoiceStudio} />
-        <Route path={"/studio-legacy"} component={StudioEnhanced} />
-        <Route path={"/studio-old"} component={Studio} />
+        <Route path={"/"} component={StudioFunctional} />
+        <Route path={"/studio"} component={StudioFunctional} />
         <Route path={"/dashboard"} component={Dashboard} />
         <Route path={"/404"} component={NotFound} />
-        <Route component={StudioProduction} />
+        <Route component={StudioFunctional} />
       </Switch>
     );
   }
