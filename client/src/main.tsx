@@ -34,13 +34,20 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-const MANUS_BACKEND = "https://dieter-music-jnmb3nnd.manus.space";
-const apiBase = import.meta.env.VITE_API_URL || MANUS_BACKEND;
+// Use relative URL so Vercel proxy handles it, fallback to Manus for dev
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return `${import.meta.env.VITE_API_URL}/api/trpc`;
+  }
+  // In Vercel production: use relative URL (proxied by api/trpc.js)
+  // In Manus dev: use window.location.origin which points to the Manus backend
+  return '/api/trpc';
+};
 
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: `${apiBase}/api/trpc`,
+      url: getApiUrl(),
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
