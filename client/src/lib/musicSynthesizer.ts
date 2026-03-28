@@ -72,6 +72,20 @@ export class MusicSynthesizer {
   private reverb: Tone.Reverb;
   private delay: Tone.Delay;
   private compressor: Tone.Compressor;
+    private fmSynth: Tone.FMSynth;
+  private amSynth: Tone.AMSynth;
+  private pluckSynth: Tone.PluckSynth;
+  
+  // Advanced effects
+  private distortion: Tone.Distortion;
+  private chorus: Tone.Chorus;
+  private phaser: Tone.Phaser;
+  private autoFilter: Tone.AutoFilter;
+  private pitchShift: Tone.PitchShift;
+  
+  // Arpeggiator
+  private arpeggiator: Tone.Pattern | null = null;
+  private arpPattern: 'up' | 'down' | 'upDown' | 'random' = 'up';
   private master: Tone.Gain;
   private analyser: Tone.Analyser;
     
@@ -132,6 +146,30 @@ export class MusicSynthesizer {
       envelope: { attack: 0.05, decay: 0.3, sustain: 0.2, release: 0.5 },
     }).toDestination();
 
+        // Initialize advanced synths
+    this.fmSynth = new Tone.FMSynth({
+      harmonicity: 3,
+      modulationIndex: 10,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.5 },
+      modulation: { type: 'square' },
+      modulationEnvelope: { attack: 0.2, decay: 0.01, sustain: 1, release: 0.5 }
+    }).toDestination();
+    
+    this.amSynth = new Tone.AMSynth({
+      harmonicity: 2,
+      oscillator: { type: 'fmsine' },
+      envelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.5 },
+      modulation: { type: 'square' },
+      modulationEnvelope: { attack: 0.5, decay: 0.01, sustain: 1, release: 0.5 }
+    }).toDestination();
+    
+    this.pluckSynth = new Tone.PluckSynth({
+      attackNoise: 1,
+      dampening: 4000,
+      resonance: 0.9
+    }).toDestination();
+
     // Effects
     this.reverb = new Tone.Reverb(2).toDestination();
     this.delay = new Tone.Delay(0.5).connect(this.reverb);
@@ -140,6 +178,23 @@ export class MusicSynthesizer {
 
     // Connect synths to master
     this.synth.connect(this.master);
+        
+    // Initialize advanced effects
+    this.distortion = new Tone.Distortion(0.8).toDestination();
+    this.chorus = new Tone.Chorus(4, 2.5, 0.5).toDestination();
+    this.phaser = new Tone.Phaser({
+      frequency: 15,
+      octaves: 5,
+      baseFrequency: 1000
+    }).toDestination();
+    this.autoFilter = new Tone.AutoFilter({
+      frequency: 1,
+      type: 'sine',
+      depth: 1,
+      baseFrequency: 200,
+      octaves: 2.6
+    }).toDestination();
+    this.pitchShift = new Tone.PitchShift(0).toDestination();
     this.bass.connect(this.master);
     this.chords.connect(this.master);
     Object.values(this.drums).forEach(drum => drum.connect(this.master));
