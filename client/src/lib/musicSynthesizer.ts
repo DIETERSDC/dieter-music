@@ -75,6 +75,11 @@ export class MusicSynthesizer {
   private master: Tone.Gain;
   private analyser: Tone.Analyser;
   
+  // Web Speech API for voice synthesis
+  private speechSynthesis: SpeechSynthesis | null = null;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private selectedVoiceName: string = 'female-soprano';
+  
   private isPlaying = false;
   private currentTime = 0;
   private totalDuration = 0;
