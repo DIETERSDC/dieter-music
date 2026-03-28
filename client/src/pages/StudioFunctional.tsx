@@ -4,7 +4,7 @@
  * Complete DAW with mixer, effects, and waveform visualization
  */
 
-import { useAuth } from "@/_core/hooks/useAuth";
+// import { useAuth } from "@/_core/hooks/useAuth"; // Auth disabled for public Vercel deployment
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -30,7 +30,9 @@ const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const CHANNELS = ["Vocals", "Harmony", "Kick", "Snare", "HiHat", "Bass", "Chords", "FX"];
 
 export default function StudioFunctional() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth(); // Auth disabled for public Vercel deployment
+    const user = null; // No auth on Vercel
+    const logout = () => {}; // No-op logout
   const [, setLocation] = useLocation();
   const synthesizer = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
