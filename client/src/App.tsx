@@ -4,38 +4,55 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch, Router } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Sidebar from "./components/Sidebar";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import StudioFunctional from "./pages/StudioFunctional";
 import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
+import Marketplace from "./pages/Marketplace";
+import MySongs from "./pages/MySongs";
 import { useEffect } from "react";
 
-// Router - Studio is publicly accessible (no auth required on Vercel)
-function Routes() {  return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/studio"} component={StudioFunctional} />
-      <Route path={"/dashboard"} component={Dashboard} />
-      <Route path={"/pricing"} component={Pricing} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+// Router with Sidebar Layout (Suno/Mureka style)
+function Routes() {
+  return (
+    <div className="flex min-h-screen bg-[#0a0a0a]">
+      <Sidebar />
+      <main className="flex-1 ml-64">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/studio" component={StudioFunctional} />
+          <Route path="/my-songs" component={MySongs} />
+          <Route path="/marketplace" component={Marketplace} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/404" component={NotFound} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 
 function App() {
-  // Handle /studio direct access - redirect to hash-based routing
+  // Handle direct path access - redirect to hash-based routing
   useEffect(() => {
     if (typeof window !== "undefined") {
       const path = window.location.pathname;
       const hash = window.location.hash;
-      if (path === "/studio" && !hash) {
-        window.location.href = "/#/studio";
-        return;
-      }
-      if (path === "/dashboard" && !hash) {
-        window.location.href = "/#/dashboard";
+      
+      // Redirect common paths to hash-based routes
+      const pathRedirects: Record<string, string> = {
+        '/studio': '/#/studio',
+        '/dashboard': '/#/dashboard',
+        '/marketplace': '/#/marketplace',
+        '/my-songs': '/#/my-songs',
+        '/pricing': '/#/pricing',
+      };
+      
+      if (pathRedirects[path] && !hash) {
+        window.location.href = pathRedirects[path];
         return;
       }
     }
@@ -47,10 +64,10 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router hook={useHashLocation}>
-                      <Routes />
+            <Routes />
           </Router>
-                  </TooltipProvider>
-              </ThemeProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
