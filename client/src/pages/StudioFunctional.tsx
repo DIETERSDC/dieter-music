@@ -242,7 +242,7 @@ export default function StudioFunctional() {
       </header>
 
       {/* Main Content */}
-      <div className="flex pt-16 h-[calc(100vh-64px)]">
+      <div className="flex pt-16 h-[calc(100vh-64px)] overflow-auto">
         {/* Sidebar */}
         {sidebarOpen && (
           <div className="w-80 bg-slate-800/50 border-r border-cyan-500/20 overflow-y-auto p-6 space-y-6">
