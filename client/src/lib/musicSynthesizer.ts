@@ -74,6 +74,13 @@ export class MusicSynthesizer {
   private compressor: Tone.Compressor;
   private master: Tone.Gain;
   private analyser: Tone.Analyser;
+    
+  // Beat detection properties
+  private beatAnalyser: Tone.Analyser | null = null;
+  private lastBeatTime: number = 0;
+  private beatThreshold: number = 0.6;
+  private beatCallbacks: Array<(energy: number, time: number) => void> = [];
+  private beatDetectionInterval: number | null = null;
   
   // Web Speech API for voice synthesis
   private speechSynthesis: SpeechSynthesis | null = null;
@@ -143,6 +150,11 @@ export class MusicSynthesizer {
 
     // Initialize channel gains
     this.channelGains = {
+          this.master.connect(this.analyser);
+    
+    // Initialize beat detection analyser
+    this.beatAnalyser = new Tone.Analyser('fft', 512);
+    this.master.connect(this.beatAnalyser);
       vocals: new Tone.Gain(0.8),
       harmony: new Tone.Gain(0.6),
       kick: new Tone.Gain(0.9),
@@ -302,6 +314,7 @@ export class MusicSynthesizer {
     // Start playback
     this.isPlaying = true;
     Tone.Transport.start();
+        this.startBeatDetection();
   }
 
   /**
@@ -436,6 +449,7 @@ export class MusicSynthesizer {
     Tone.Transport.cancel();
     this.isPlaying = false;
     this.currentTime = 0;
+        this.stopBeatDetection();
   }
 
   /**
@@ -513,6 +527,76 @@ export class MusicSynthesizer {
    * Cleanup
    */
   dispose(): void {
+    /**
+   * Start beat detection
+   */
+  startBeatDetection(): void {
+    if (this.beatDetectionInterval) return;
+    
+    const detectBeat = () => {
+      if (!this.beatAnalyser) return;
+      
+      const values = this.beatAnalyser.getValue() as Float32Array;
+      const sum = values.reduce((acc, val) => acc + Math.abs(val), 0);
+      const average = sum / values.length;
+      const energy = average;
+      
+      const now = Tone.now();
+      const timeSinceLastBeat = now - this.lastBeatTime;
+      const minBeatInterval = (60 / this.bpm) * 0.25; // Min 1/4 beat
+      
+      if (energy > this.beatThreshold && timeSinceLastBeat > minBeatInterval) {
+        this.lastBeatTime = now;
+        this.beatCallbacks.forEach(callback => callback(energy, now));
+      }
+    };
+    
+    this.beatDetectionInterval = window.setInterval(detectBeat, 50) as unknown as number;
+  }
+  
+  /**
+   * Stop beat detection
+   */
+  stopBeatDetection(): void {
+    if (this.beatDetectionInterval) {
+      clearInterval(this.beatDetectionInterval);
+      this.beatDetectionInterval = null;
+    }
+  }
+  
+  /**
+   * Register callback for beat events
+   */
+  onBeat(callback: (energy: number, time: number) => void): void {
+    this.beatCallbacks.push(callback);
+  }
+  
+  /**
+   * Clear all beat callbacks
+   */
+  clearBeatCallbacks(): void {
+    this.beatCallbacks = [];
+  }
+  
+  /**
+   * Set beat detection threshold
+   */
+  setBeatThreshold(threshold: number): void {
+    this.beatThreshold = Math.max(0, Math.min(1, threshold));
+  }
+  
+  /**
+   * Get current beat energy level
+   */
+  getBeatEnergy(): number {
+    if (!this.beatAnalyser) return 0;
+    
+    const values = this.beatAnalyser.getValue() as Float32Array;
+    const sum = values.reduce((acc, val) => acc + Math.abs(val), 0);
+    return sum / values.length;
+  }
+
+
     this.stop();
     this.synth.dispose();
     this.bass.dispose();
