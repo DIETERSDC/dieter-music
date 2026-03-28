@@ -34,8 +34,8 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-const apiBase = import.meta.env.VITE_API_URL ||
-  (typeof window !== 'undefined' ? window.location.origin : '');
+const MANUS_BACKEND = "https://dieter-music-jnmb3nnd.manus.space";
+const apiBase = import.meta.env.VITE_API_URL || MANUS_BACKEND;
 
 const trpcClient = trpc.createClient({
   links: [
