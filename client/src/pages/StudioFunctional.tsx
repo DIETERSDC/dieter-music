@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { getSynthesizer } from "@/lib/musicSynthesizer";
+import MusicSynthesizer from "@/lib/musicSynthesizer";
 
 const VOICES = [
   { id: "male-deep", name: "Male Deep", gender: "male", tone: "deep" },
@@ -38,7 +38,7 @@ export default function StudioFunctional() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    synthesizer.current = getSynthesizer();
+    synthesizer.current = new MusicSynthesizer();
   }, []);
   const animationRef = useRef<number | null>(null);
 
