@@ -4,7 +4,7 @@
  * Complete DAW with mixer, effects, and waveform visualization
  */
 
-import { useAuth } from "@/_core/hooks/useAuth";
+// import { useAuth } from "@/_core/hooks/useAuth"; // Auth disabled for public Vercel deployment
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -30,7 +30,9 @@ const KEYS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const CHANNELS = ["Vocals", "Harmony", "Kick", "Snare", "HiHat", "Bass", "Chords", "FX"];
 
 export default function StudioFunctional() {
-  const { user, logout } = useAuth();
+  // const { user, logout } = useAuth(); // Auth disabled for public Vercel deployment
+    const user = null; // No auth on Vercel
+    const logout = () => {}; // No-op logout
   const [, setLocation] = useLocation();
   const synthesizer = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -240,7 +242,7 @@ export default function StudioFunctional() {
       </header>
 
       {/* Main Content */}
-      <div className="flex pt-16 h-[calc(100vh-64px)]">
+      <div className="flex pt-16 h-[calc(100vh-64px)] overflow-auto">
         {/* Sidebar */}
         {sidebarOpen && (
           <div className="w-80 bg-slate-800/50 border-r border-cyan-500/20 overflow-y-auto p-6 space-y-6">
@@ -262,7 +264,10 @@ export default function StudioFunctional() {
                 {VOICES.map(voice => (
                   <button
                     key={voice.id}
-                    onClick={() => setSelectedVoice(voice.id)}
+                    onClick={() => {
+                  setSelectedVoice(voice.id);
+                  synthesizer.current?.setVoice(voice.id);
+                }}
                     className={`p-2 rounded-lg text-xs font-medium transition ${
                       selectedVoice === voice.id
                         ? "bg-cyan-600 text-white"

@@ -72,8 +72,34 @@ export class MusicSynthesizer {
   private reverb: Tone.Reverb;
   private delay: Tone.Delay;
   private compressor: Tone.Compressor;
+    private fmSynth: Tone.FMSynth;
+  private amSynth: Tone.AMSynth;
+  private pluckSynth: Tone.PluckSynth;
+  
+  // Advanced effects
+  private distortion: Tone.Distortion;
+  private chorus: Tone.Chorus;
+  private phaser: Tone.Phaser;
+  private autoFilter: Tone.AutoFilter;
+  private pitchShift: Tone.PitchShift;
+  
+  // Arpeggiator
+  private arpeggiator: Tone.Pattern | null = null;
+  private arpPattern: 'up' | 'down' | 'upDown' | 'random' = 'up';
   private master: Tone.Gain;
   private analyser: Tone.Analyser;
+    
+  // Beat detection properties
+  private beatAnalyser: Tone.Analyser | null = null;
+  private lastBeatTime: number = 0;
+  private beatThreshold: number = 0.6;
+  private beatCallbacks: Array<(energy: number, time: number) => void> = [];
+  private beatDetectionInterval: number | null = null;
+  
+  // Web Speech API for voice synthesis
+  private speechSynthesis: SpeechSynthesis | null = null;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private selectedVoiceName: string = 'female-soprano';
   
   private isPlaying = false;
   private currentTime = 0;
@@ -120,6 +146,30 @@ export class MusicSynthesizer {
       envelope: { attack: 0.05, decay: 0.3, sustain: 0.2, release: 0.5 },
     }).toDestination();
 
+        // Initialize advanced synths
+    this.fmSynth = new Tone.FMSynth({
+      harmonicity: 3,
+      modulationIndex: 10,
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.5 },
+      modulation: { type: 'square' },
+      modulationEnvelope: { attack: 0.2, decay: 0.01, sustain: 1, release: 0.5 }
+    }).toDestination();
+    
+    this.amSynth = new Tone.AMSynth({
+      harmonicity: 2,
+      oscillator: { type: 'fmsine' },
+      envelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.5 },
+      modulation: { type: 'square' },
+      modulationEnvelope: { attack: 0.5, decay: 0.01, sustain: 1, release: 0.5 }
+    }).toDestination();
+    
+    this.pluckSynth = new Tone.PluckSynth({
+      attackNoise: 1,
+      dampening: 4000,
+      resonance: 0.9
+    }).toDestination();
+
     // Effects
     this.reverb = new Tone.Reverb(2).toDestination();
     this.delay = new Tone.Delay(0.5).connect(this.reverb);
@@ -128,6 +178,23 @@ export class MusicSynthesizer {
 
     // Connect synths to master
     this.synth.connect(this.master);
+        
+    // Initialize advanced effects
+    this.distortion = new Tone.Distortion(0.8).toDestination();
+    this.chorus = new Tone.Chorus(4, 2.5, 0.5).toDestination();
+    this.phaser = new Tone.Phaser({
+      frequency: 15,
+      octaves: 5,
+      baseFrequency: 1000
+    }).toDestination();
+    this.autoFilter = new Tone.AutoFilter({
+      frequency: 1,
+      type: 'sine',
+      depth: 1,
+      baseFrequency: 200,
+      octaves: 2.6
+    }).toDestination();
+    this.pitchShift = new Tone.PitchShift(0).toDestination();
     this.bass.connect(this.master);
     this.chords.connect(this.master);
     Object.values(this.drums).forEach(drum => drum.connect(this.master));
@@ -138,6 +205,11 @@ export class MusicSynthesizer {
 
     // Initialize channel gains
     this.channelGains = {
+          this.master.connect(this.analyser);
+    
+    // Initialize beat detection analyser
+    this.beatAnalyser = new Tone.Analyser('fft', 512);
+    this.master.connect(this.beatAnalyser);
       vocals: new Tone.Gain(0.8),
       harmony: new Tone.Gain(0.6),
       kick: new Tone.Gain(0.9),
@@ -150,6 +222,44 @@ export class MusicSynthesizer {
 
     // Connect channels to master
     Object.values(this.channelGains).forEach(gain => gain.connect(this.master));
+
+        // Initialize Web Speech API
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      this.speechSynthesis = window.speechSynthesis;
+    }
+  }
+
+    /**
+   * Set the voice for synthesis
+   */
+  setVoice(voiceId: string) {
+    this.selectedVoiceName = voiceId;
+  }
+
+  /**
+   * Get the appropriate voice for the selected voice type
+   */
+  private getVoiceForSelection(): SpeechSynthesisVoice | null {
+    if (!this.speechSynthesis) return null;
+    
+    const voices = this.speechSynthesis.getVoices();
+    const voiceMap: Record<string, string[]> = {
+      'male-deep': ['Google US English', 'Microsoft David', 'Alex'],
+      'male-warm': ['Google UK English Male', 'Microsoft Mark'],
+      'male-bright': ['Daniel', 'Microsoft Ravi'],
+      'female-soprano': ['Google US English Female', 'Microsoft Zira', 'Samantha'],
+      'female-alto': ['Google UK English Female', 'Microsoft Hazel', 'Victoria'],
+      'female-breathy': ['Fiona', 'Microsoft Eva', 'Karen']
+    };
+    
+    const preferredNames = voiceMap[this.selectedVoiceName] || [];
+    for (const name of preferredNames) {
+      const voice = voices.find(v => v.name.includes(name));
+      if (voice) return voice;
+    }
+    
+    // Fallback to first English voice or any voice
+    return voices.find(v => v.lang.startsWith('en')) || voices[0] || null;
   }
 
   /**
@@ -238,11 +348,28 @@ export class MusicSynthesizer {
     this.scheduleDrums(genre);
 
     // Schedule voice synthesis
-    this.scheduleVoiceSynthesis(lyrics);
+    this.scheduleVoiceSynthesis// Add vocal synthesis with Web Speech API
+    if (this.speechSynthesis && lyrics.trim()) {
+      const utterance = new SpeechSynthesisUtterance(lyrics);
+      const voice = this.getVoiceForSelection();
+      
+      if (voice) {
+        utterance.voice = voice;
+        utterance.pitch = 1.2; // Slightly higher for singing effect
+        utterance.rate = (60 / bpm) * 4; // Sync with BPM
+        utterance.volume = 0.7;
+        
+        this.currentUtterance = utterance;
+        setTimeout(() => {
+          this.speechSynthesis!.speak(utterance);
+        }, 100); // Small delay to sync with music
+      }
+    }
 
     // Start playback
     this.isPlaying = true;
     Tone.Transport.start();
+        this.startBeatDetection();
   }
 
   /**
@@ -377,6 +504,7 @@ export class MusicSynthesizer {
     Tone.Transport.cancel();
     this.isPlaying = false;
     this.currentTime = 0;
+        this.stopBeatDetection();
   }
 
   /**
@@ -454,6 +582,76 @@ export class MusicSynthesizer {
    * Cleanup
    */
   dispose(): void {
+    /**
+   * Start beat detection
+   */
+  startBeatDetection(): void {
+    if (this.beatDetectionInterval) return;
+    
+    const detectBeat = () => {
+      if (!this.beatAnalyser) return;
+      
+      const values = this.beatAnalyser.getValue() as Float32Array;
+      const sum = values.reduce((acc, val) => acc + Math.abs(val), 0);
+      const average = sum / values.length;
+      const energy = average;
+      
+      const now = Tone.now();
+      const timeSinceLastBeat = now - this.lastBeatTime;
+      const minBeatInterval = (60 / this.bpm) * 0.25; // Min 1/4 beat
+      
+      if (energy > this.beatThreshold && timeSinceLastBeat > minBeatInterval) {
+        this.lastBeatTime = now;
+        this.beatCallbacks.forEach(callback => callback(energy, now));
+      }
+    };
+    
+    this.beatDetectionInterval = window.setInterval(detectBeat, 50) as unknown as number;
+  }
+  
+  /**
+   * Stop beat detection
+   */
+  stopBeatDetection(): void {
+    if (this.beatDetectionInterval) {
+      clearInterval(this.beatDetectionInterval);
+      this.beatDetectionInterval = null;
+    }
+  }
+  
+  /**
+   * Register callback for beat events
+   */
+  onBeat(callback: (energy: number, time: number) => void): void {
+    this.beatCallbacks.push(callback);
+  }
+  
+  /**
+   * Clear all beat callbacks
+   */
+  clearBeatCallbacks(): void {
+    this.beatCallbacks = [];
+  }
+  
+  /**
+   * Set beat detection threshold
+   */
+  setBeatThreshold(threshold: number): void {
+    this.beatThreshold = Math.max(0, Math.min(1, threshold));
+  }
+  
+  /**
+   * Get current beat energy level
+   */
+  getBeatEnergy(): number {
+    if (!this.beatAnalyser) return 0;
+    
+    const values = this.beatAnalyser.getValue() as Float32Array;
+    const sum = values.reduce((acc, val) => acc + Math.abs(val), 0);
+    return sum / values.length;
+  }
+
+
     this.stop();
     this.synth.dispose();
     this.bass.dispose();

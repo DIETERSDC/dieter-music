@@ -1,72 +1,58 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Router } from "wouter";
+import { useHashLocation } from "wouter/use-hash-location";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Sidebar from "./components/Sidebar";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Music } from "lucide-react";
 import Home from "./pages/Home";
 import StudioFunctional from "./pages/StudioFunctional";
 import Dashboard from "./pages/Dashboard";
 import Pricing from "./pages/Pricing";
+import Marketplace from "./pages/Marketplace";
+import MySongs from "./pages/MySongs";
 import { useEffect } from "react";
 
-function Router() {
-  const { user, isAuthenticated, loading } = useAuth();
-
-  // Show loading state while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Music className="w-12 h-12 mx-auto text-cyan-500 mb-4 animate-pulse" />
-          <p className="text-foreground">Loading your sanctuary...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If authenticated, show studio routes, otherwise show home
-  if (isAuthenticated) {
-    return (
-      <Switch>
-        <Route path={"/"} component={StudioFunctional} />
-        <Route path={"/studio"} component={StudioFunctional} />
-        <Route path={"/dashboard"} component={Dashboard} />
-        <Route path={"/404"} component={NotFound} />
-        <Route component={StudioFunctional} />
-      </Switch>
-    );
-  }
-
-  // Unauthenticated routes
+// Router with Sidebar Layout (Suno/Mureka style)
+function Routes() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/pricing"} component={Pricing} />
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex min-h-screen bg-[#0a0a0a]">
+      <Sidebar />
+      <main className="flex-1 ml-64">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/studio" component={StudioFunctional} />
+          <Route path="/my-songs" component={MySongs} />
+          <Route path="/marketplace" component={Marketplace} />
+          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/pricing" component={Pricing} />
+          <Route path="/404" component={NotFound} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 
 function App() {
-  // Handle /studio 404 by redirecting to hash-based routing
+  // Handle direct path access - redirect to hash-based routing
   useEffect(() => {
     if (typeof window !== "undefined") {
       const path = window.location.pathname;
       const hash = window.location.hash;
       
-      // If accessing /studio directly without hash, redirect to /#/studio
-      if (path === "/studio" && !hash) {
-        window.location.href = "/#/studio";
-        return;
-      }
+      // Redirect common paths to hash-based routes
+      const pathRedirects: Record<string, string> = {
+        '/studio': '/#/studio',
+        '/dashboard': '/#/dashboard',
+        '/marketplace': '/#/marketplace',
+        '/my-songs': '/#/my-songs',
+        '/pricing': '/#/pricing',
+      };
       
-      // If accessing /dashboard directly without hash, redirect to /#/dashboard
-      if (path === "/dashboard" && !hash) {
-        window.location.href = "/#/dashboard";
+      if (pathRedirects[path] && !hash) {
+        window.location.href = pathRedirects[path];
         return;
       }
     }
@@ -74,12 +60,12 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="dark"
-      >
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <Router hook={useHashLocation}>
+            <Routes />
+          </Router>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

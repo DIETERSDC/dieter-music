@@ -13,11 +13,8 @@ const queryClient = new QueryClient();
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
-
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
-
   window.location.href = getLoginUrl();
 };
 
@@ -37,10 +34,19 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Build absolute URL for tRPC - required by httpBatchLink
+// Uses window.location.origin so it works on any domain (Vercel, Manus, etc.)
+const getApiUrl = (): string => {
+  const base = typeof window !== "undefined"
+    ? window.location.origin
+    : "http://localhost:5000";
+  return `${base}/api/trpc`;
+};
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: getApiUrl(),
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {
